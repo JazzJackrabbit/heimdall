@@ -1,0 +1,91 @@
+//go:build perplexity
+
+package providers_test
+
+import (
+	"context"
+	"net/http"
+	"os"
+	"testing"
+	"time"
+
+	"github.com/JazzJackrabbit/heimdall/models"
+	"github.com/JazzJackrabbit/heimdall/providers"
+	"github.com/JazzJackrabbit/heimdall/request"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+)
+
+func TestPerplexityModelsWithCompletion(t *testing.T) {
+	t.Parallel()
+
+	apiKey := os.Getenv("PERPLEXITY_API_KEY")
+	if apiKey == "" {
+		t.Skip("PERPLEXITY_API_KEY not set")
+	}
+
+	client := http.Client{
+		Timeout: 2 * time.Minute,
+	}
+	perplexity := providers.NewPerplexity([]string{apiKey})
+
+	req := request.Completion{
+		Model:         models.Sonar{},
+		SystemMessage: "you are a helpful assistant.",
+		UserMessage:   "Say hello in one sentence.",
+		Temperature:   1,
+		Tags: map[string]string{
+			"type": "testing",
+		},
+	}
+
+	res, err := perplexity.CompleteResponse(
+		context.Background(),
+		req,
+		client,
+		nil,
+	)
+	require.NoError(t, err, "CompleteResponse returned an unexpected error")
+	assert.NotEmpty(t, res.Model, "model should not be empty")
+	assert.NotEmpty(t, res.Content, "content should not be empty")
+}
+
+func TestPerplexityModelsWithStreaming(t *testing.T) {
+	t.Parallel()
+
+	apiKey := os.Getenv("PERPLEXITY_API_KEY")
+	if apiKey == "" {
+		t.Skip("PERPLEXITY_API_KEY not set")
+	}
+
+	client := http.Client{
+		Timeout: 2 * time.Minute,
+	}
+	perplexity := providers.NewPerplexity([]string{apiKey})
+
+	req := request.Completion{
+		Model:         models.Sonar{},
+		SystemMessage: "you are a helpful assistant.",
+		UserMessage:   "Say hello in one sentence.",
+		Temperature:   1,
+		Tags: map[string]string{
+			"type": "testing",
+		},
+	}
+
+	var chunkHandlerCollection string
+	res, err := perplexity.StreamResponse(
+		context.Background(),
+		client,
+		req,
+		func(chunk string) error {
+			chunkHandlerCollection = chunkHandlerCollection + chunk
+			return nil
+		},
+		nil,
+	)
+	require.NoError(t, err, "StreamResponse returned an unexpected error")
+	assert.NotEmpty(t, chunkHandlerCollection, "chunkHandlerCollection should not be empty")
+	assert.NotEmpty(t, res.Content, "content should not be empty")
+	assert.NotEmpty(t, res.Model, "model should not be empty")
+}
