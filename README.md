@@ -658,4 +658,4 @@ Heimdall supports various models from different providers:
 
 ## License
 
-This project is licensed under the terms found in the LICENSE file.
+BSD-3-Clause — see [LICENSE](LICENSE). Based on [flyx/heimdall](https://github.com/flyx/heimdall).
