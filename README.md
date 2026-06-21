@@ -2,6 +2,25 @@
 
 Heimdall is a robust Go library for making LLM (Large Language Model) requests more consistent by providing automatic retries and fallback options. It acts as a router between your application and various LLM providers, ensuring reliable and efficient interaction with AI models.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/JazzJackrabbit/heimdall.svg)](https://pkg.go.dev/github.com/JazzJackrabbit/heimdall)
+[![License: BSD-3](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
+
+## Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Provider Setup](#provider-setup)
+- [Multi-turn Conversations](#multi-turn-conversations)
+- [Working with PDF Files](#working-with-pdf-files)
+- [Streaming Responses](#streaming-responses)
+- [Structured Output](#structured-output)
+- [Advanced Router Configuration](#advanced-router-configuration)
+- [Working with Images](#working-with-images)
+- [Error Handling](#error-handling)
+- [Supported Models](#supported-models)
+- [License](#license)
+
 ## Features
 
 - **Provider Abstraction**: Unified interface for multiple LLM providers (OpenAI, Anthropic, Google/Gemini, Grok, VertexAI, OpenRouter, Perplexity)
@@ -76,6 +95,8 @@ func main() {
 }
 ```
 
+> **Two ways to call.** The recommended entry point is the **router** (`router.Complete` / `router.Stream`), which adds retries and model fallbacks on top of your providers. Every provider also exposes the lower-level `CompleteResponse` / `StreamResponse` methods directly — several examples below use these to keep the snippet self-contained, but you can route any of them through the router the same way.
+
 ## Provider Setup
 
 Heimdall supports multiple LLM providers. Here's how to set them up:
@@ -115,14 +136,20 @@ func main() {
 		ctx,
 		models.Gemini20Flash{}.GetName(),
 		providers.CacheContentPayload{
+			// Map of MIME type -> file URI (e.g. a Cloud Storage URI)
 			FileData: map[string]string{
-                // Add your file data here
-				<mime_type_here>: <file_uri_here>,
+				"application/pdf": "gs://my-bucket/contract.pdf",
 			},
 		},
-		<system_prompt>,
+		"You are a contract analysis assistant.",
 		10*time.Minute,
 	)
+	if err != nil {
+		panic(err)
+	}
+
+	// Reuse the returned id in later requests to skip re-sending the cached content
+	fmt.Println("cached content id:", key)
 }
 
 ```
@@ -149,6 +176,29 @@ grokProvider := providers.NewGrok([]string{"your-api-key"})
 
 ```go
 openRouterProvider := providers.NewOpenRouter([]string{"your-api-key"})
+```
+
+## Multi-turn Conversations
+
+Pass prior turns through the `History` field to give the model conversational context. Each `request.Message` has a `Role` (`"user"` or `"assistant"`) and `Content`:
+
+```go
+req := request.Completion{
+	Model:         models.GPT4O{},
+	SystemMessage: "You are a helpful travel assistant.",
+	History: []request.Message{
+		{Role: "user", Content: "I'm planning a trip to Japan."},
+		{Role: "assistant", Content: "Great! When are you planning to go?"},
+	},
+	UserMessage: "Sometime in April — what should I know?",
+}
+
+response, err := router.Complete(ctx, req)
+if err != nil {
+	panic(err)
+}
+
+fmt.Println(response.Content)
 ```
 
 ## Working with PDF Files
@@ -637,6 +687,18 @@ Heimdall supports various models from different providers:
 - Gemini 2.5 Flash Image (gemini-2.5-flash-image)
 - Gemini 2.0 Flash (gemini-2.0-flash-001) — _deprecated, retires June 1, 2026_
 - Gemini 2.0 Flash Lite (gemini-2.0-flash-lite-001) — _deprecated, retires June 1, 2026_
+
+### VertexAI Models
+Gemini models served through Google Cloud Vertex AI (use the `VertexGemini*` model types):
+- Gemini 3 Pro Preview (gemini-3-pro-preview)
+- Gemini 3 Flash Preview (gemini-3-flash-preview)
+- Gemini 3 Pro Image Preview (gemini-3-pro-image-preview)
+- Gemini 2.5 Pro (gemini-2.5-pro)
+- Gemini 2.5 Flash (gemini-2.5-flash)
+- Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
+- Gemini 2.5 Flash Image (gemini-2.5-flash-image)
+- Gemini 2.0 Flash (gemini-2.0-flash-001)
+- Gemini 2.0 Flash Lite (gemini-2.0-flash-lite-001)
 
 ### Grok Models
 - Grok 4 (grok-4)
