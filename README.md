@@ -3,6 +3,7 @@
 Heimdall is a robust Go library for making LLM (Large Language Model) requests more consistent by providing automatic retries and fallback options. It acts as a router between your application and various LLM providers, ensuring reliable and efficient interaction with AI models.
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/JazzJackrabbit/heimdall.svg)](https://pkg.go.dev/github.com/JazzJackrabbit/heimdall)
+[![Release](https://img.shields.io/github/v/release/JazzJackrabbit/heimdall)](https://github.com/JazzJackrabbit/heimdall/releases)
 [![License: BSD-3](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](LICENSE)
 
 ## Contents
@@ -720,4 +721,4 @@ Gemini models served through Google Cloud Vertex AI (use the `VertexGemini*` mod
 
 ## License
 
-BSD-3-Clause — see [LICENSE](LICENSE). Based on [flyx/heimdall](https://github.com/flyx/heimdall).
+BSD-3-Clause — see [LICENSE](LICENSE). Based on [flyx-ai/heimdall](https://github.com/flyx-ai/heimdall).
