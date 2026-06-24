@@ -135,7 +135,7 @@ func main() {
     
 	key, err := g.CacheContent(
 		ctx,
-		models.Gemini20Flash{}.GetName(),
+		models.Gemini25FlashPreview{}.GetName(),
 		providers.CacheContentPayload{
 			// Map of MIME type -> file URI (e.g. a Cloud Storage URI)
 			FileData: map[string]string{
@@ -266,7 +266,7 @@ func main() {
 	res, err := googleProvider.CompleteResponse(
 		ctx,
 		request.Completion{
-			Model: models.Gemini20Flash{
+			Model: models.Gemini25FlashPreview{
 				PdfFiles: []models.GooglePdf{
 					models.GooglePdf(encodedPdf), // Base64 encoded PDF
 				},
@@ -447,7 +447,7 @@ func main() {
 	res, err := googleProvider.CompleteResponse(
 		ctx,
 		request.Completion{
-			Model: models.Gemini20Flash{
+			Model: models.Gemini25FlashPreview{
 				StructuredOutput: schemaGoogle,
 			},
 			SystemMessage: "You are a financial analyst.",
@@ -501,7 +501,7 @@ func main() {
 		// Fallbacks - will be tried in order if primary fails
 		Fallback: []models.Model{
 			models.Claude46Sonnet{},
-			models.Gemini20Flash{},
+			models.Gemini25FlashPreview{},
 		},
 		
 		SystemMessage: "You are a helpful assistant.",
@@ -673,33 +673,23 @@ Heimdall supports various models from different providers:
 - Claude 4.5 Haiku (claude-haiku-4-5)
 - Claude 4 Opus (claude-opus-4-20250514)
 - Claude 4 Sonnet (claude-sonnet-4-20250514)
-- ~~Claude 3.7 Sonnet~~ (retired Feb 19, 2026)
-- ~~Claude 3.5 Sonnet~~ (retired Oct 28, 2025)
-- ~~Claude 3.5 Haiku~~ (retired Feb 19, 2026)
-- ~~Claude 3 Opus~~ (retired Jan 5, 2026)
 
 ### Google/Gemini Models
 - Gemini 3 Flash Preview (gemini-3-flash-preview)
-- Gemini 3 Pro Preview (gemini-3-pro-preview) — _deprecated, shuts down March 9, 2026; use gemini-3.1-pro-preview_
 - Gemini 3 Pro Image Preview (gemini-3-pro-image-preview)
 - Gemini 2.5 Pro (gemini-2.5-pro)
 - Gemini 2.5 Flash (gemini-2.5-flash)
 - Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
 - Gemini 2.5 Flash Image (gemini-2.5-flash-image)
-- Gemini 2.0 Flash (gemini-2.0-flash-001) — _deprecated, retires June 1, 2026_
-- Gemini 2.0 Flash Lite (gemini-2.0-flash-lite-001) — _deprecated, retires June 1, 2026_
 
 ### VertexAI Models
 Gemini models served through Google Cloud Vertex AI (use the `VertexGemini*` model types):
-- Gemini 3 Pro Preview (gemini-3-pro-preview)
 - Gemini 3 Flash Preview (gemini-3-flash-preview)
 - Gemini 3 Pro Image Preview (gemini-3-pro-image-preview)
 - Gemini 2.5 Pro (gemini-2.5-pro)
 - Gemini 2.5 Flash (gemini-2.5-flash)
 - Gemini 2.5 Flash Lite (gemini-2.5-flash-lite)
 - Gemini 2.5 Flash Image (gemini-2.5-flash-image)
-- Gemini 2.0 Flash (gemini-2.0-flash-001)
-- Gemini 2.0 Flash Lite (gemini-2.0-flash-lite-001)
 
 ### Grok Models
 - Grok 4 (grok-4)
